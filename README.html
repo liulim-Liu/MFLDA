@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>MFLDA&colon; Multivariate Functional Linear Discriminant Analysis</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
+<link href="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h1 id="mflda-multivariate-functional-linear-discriminant-analysis">MFLDA: Multivariate Functional Linear Discriminant Analysis</h1>
+<h4 id="limeng-liu-guannan-wang-and-sandra-e-safo">Limeng Liu, Guannan Wang, and Sandra E. Safo</h4>
+<h2 id="description">Description</h2>
+<p><code>MFLDA</code> is an R package designed to implement Multivariate Functional Linear Discriminant Analysis (MFLDA) for the classification of multivariate longitudinal data.
+This model is particularly useful in applications where the goal is to
+distinguish between two or three different classes from multivariate functional data while simultaneously identifying the most discriminating features.</p>
+<h3 id="key-features">Key Features:</h3>
+<ul>
+<li><strong>Multivariate Functional Data:</strong> Handles longitudinal data with multiple variables, allowing for a more comprehensive analysis of complex data structures.</li>
+<li><strong>Sparse Feature Selection:</strong> Performs automatic feature selection, identifying the most important time-varying features that contribute to the discrimination between classes to enhance interpretability.</li>
+<li><strong>Flexible Time Representation:</strong> Accommodates both discrete and continuous time domains, as well as irregularly sampled time points. This flexibility makes the method applicable to a wide range of real-world longitudinal data where time observations may not be equally spaced.</li>
+<li><strong>Two- or Three-Class Classification:</strong> Supports classification tasks where the response variable consists of two or three distinct classes, making it suitable for binary and multi-class problems.</li>
+</ul>
+<p>By integrating functional data analysis techniques with sparse learning methods, MFLDA offers a powerful tool for classifying multivariate longitudinal data, particularly when the data are high-dimensional and only a few features are informative for class separation. This package can be applied to diverse fields where temporal data with varying sampling frequencies and irregular time points are common.</p>
+<h2 id="setup">Setup</h2>
+<p>Import the package</p>
+<pre><code class="language-r">library<span class="hljs-punctuation">(</span>MFLDA<span class="hljs-punctuation">)</span>
+</code></pre>
+<p>Input data set should be in the form where row represents observations and column represents features. Three columns are needed as the first 3 columns: <code>id</code>, <code>time</code>, <code>group</code>, respectively represents participant unique id, time of visit, and which group the participant belongs to. Each participant can have different numbers of time points, where the time points can be irregular.</p>
+<p>A sample dataset shown below:</p>
+<pre><code class="language-r">df <span class="hljs-operator">&lt;-</span> data.frame<span class="hljs-punctuation">(</span>
+  id <span class="hljs-operator">=</span> <span class="hljs-built_in">c</span><span class="hljs-punctuation">(</span><span class="hljs-number">1</span><span class="hljs-punctuation">,</span><span class="hljs-number">1</span><span class="hljs-punctuation">,</span><span class="hljs-number">1</span><span class="hljs-punctuation">,</span><span class="hljs-number">2</span><span class="hljs-punctuation">,</span><span class="hljs-number">2</span><span class="hljs-punctuation">,</span><span class="hljs-number">2</span><span class="hljs-punctuation">,</span><span class="hljs-number">2</span><span class="hljs-punctuation">,</span><span class="hljs-number">3</span><span class="hljs-punctuation">,</span><span class="hljs-number">3</span><span class="hljs-punctuation">)</span>
+  time <span class="hljs-operator">=</span> <span class="hljs-built_in">c</span><span class="hljs-punctuation">(</span><span class="hljs-number">1</span><span class="hljs-punctuation">,</span><span class="hljs-number">2</span><span class="hljs-punctuation">,</span><span class="hljs-number">3</span><span class="hljs-punctuation">,</span><span class="hljs-number">1</span><span class="hljs-punctuation">,</span><span class="hljs-number">2</span><span class="hljs-punctuation">,</span><span class="hljs-number">3</span><span class="hljs-punctuation">,</span><span class="hljs-number">4</span><span class="hljs-punctuation">,</span><span class="hljs-number">1</span><span class="hljs-punctuation">,</span><span class="hljs-number">2</span><span class="hljs-punctuation">)</span><span class="hljs-punctuation">,</span>  
+  group <span class="hljs-operator">=</span> <span class="hljs-built_in">c</span><span class="hljs-punctuation">(</span><span class="hljs-number">1</span><span class="hljs-punctuation">,</span><span class="hljs-number">1</span><span class="hljs-punctuation">,</span><span class="hljs-number">1</span><span class="hljs-punctuation">,</span><span class="hljs-number">2</span><span class="hljs-punctuation">,</span><span class="hljs-number">2</span><span class="hljs-punctuation">,</span><span class="hljs-number">2</span><span class="hljs-punctuation">,</span><span class="hljs-number">2</span><span class="hljs-punctuation">,</span><span class="hljs-number">1</span><span class="hljs-punctuation">,</span><span class="hljs-number">1</span><span class="hljs-punctuation">)</span>
+<span class="hljs-punctuation">)</span>
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>time</th>
+<th>group</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>3</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>2</td>
+<td>3</td>
+<td>2</td>
+</tr>
+<tr>
+<td>2</td>
+<td>4</td>
+<td>2</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>2</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p>Apply spline smoothing estimation method to better resolve irregular time points issues. The function <code>spline.prediction</code> will take a dataframe and output a dataframe.</p>
+<pre><code class="language-r">spline.prediction<span class="hljs-punctuation">(</span>dat<span class="hljs-punctuation">)</span>
+</code></pre>
+<p>The output dataset should have same/regular time points for each participant:</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>time</th>
+<th>group</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>3</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>4</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>2</td>
+<td>3</td>
+<td>2</td>
+</tr>
+<tr>
+<td>2</td>
+<td>4</td>
+<td>2</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>3</td>
+<td>1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>4</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<h2 id="mfldatunerange">mfldatunerange</h2>
+<p>The function <code>mfldatunerange()</code> is part of the <strong>MFLDA</strong> (Multivariate Functional Linear Discriminant Analysis) framework. It is designed to help tune the range of regularization parameters (<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>τ</mi></mrow><annotation encoding="application/x-tex">\tau</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.1132em;">τ</span></span></span></span> values)
+for sparse feature selection in functional linear discriminant analysis.</p>
+<h3 id="usage">Usage:</h3>
+<pre><code class="language-r">mfldatunerange<span class="hljs-punctuation">(</span>Xtrain <span class="hljs-operator">=</span> Xtrain<span class="hljs-punctuation">,</span> Y <span class="hljs-operator">=</span> Y<span class="hljs-punctuation">,</span> ngrid <span class="hljs-operator">=</span> <span class="hljs-number">8</span><span class="hljs-punctuation">,</span> standardize <span class="hljs-operator">=</span> <span class="hljs-literal">TRUE</span><span class="hljs-punctuation">)</span>
+</code></pre>
+<h3 id="argument">Argument:</h3>
+<ul>
+<li><code>Xtrain</code>: The training data, where rows represent observations and columns represent features at different time points. The first three columns are <code>id</code>,<code>time</code>,<code>group</code>, while subsequent columns are feature values.</li>
+<li><code>Y</code>: A vector of class labels corresponding to the observations in Xtrain.</li>
+<li><code>ngrid</code>: The number of grid points to use in the <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>τ</mi></mrow><annotation encoding="application/x-tex">\tau</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.1132em;">τ</span></span></span></span> grid search (default is 8).</li>
+<li><code>standardize</code>: Logical; flag to indicate whether the data</li>
+<li>should be standardized to have mean zero and variance one for each time point and each feature (default is TRUE).</li>
+</ul>
+<h3 id="value">Value:</h3>
+<ul>
+<li><code>Tauvec</code>: A list of optimal <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>τ</mi></mrow><annotation encoding="application/x-tex">\tau</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.1132em;">τ</span></span></span></span> values. These <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>τ</mi></mrow><annotation encoding="application/x-tex">\tau</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.1132em;">τ</span></span></span></span> values are used to control the level of sparsity in the MFLDA model.</li>
+</ul>
+<h3 id="example">Example:</h3>
+<pre><code class="language-r">result <span class="hljs-operator">&lt;-</span> mfldatunerange<span class="hljs-punctuation">(</span>Xtrain <span class="hljs-operator">=</span> train_data<span class="hljs-punctuation">,</span> Y <span class="hljs-operator">=</span> class_labels<span class="hljs-punctuation">,</span> ngrid <span class="hljs-operator">=</span> <span class="hljs-number">8</span><span class="hljs-punctuation">,</span> standardize <span class="hljs-operator">=</span> <span class="hljs-literal">TRUE</span><span class="hljs-punctuation">)</span>
+tau_values <span class="hljs-operator">&lt;-</span> result<span class="hljs-operator">$</span>Tauvec
+</code></pre>
+<h2 id="mflda">MFLDA</h2>
+<p>The function <code>mflda()</code> performs Multivariate Functional Linear Discriminant Analysis (MFLDA) on training data and evaluates on test data if provided.</p>
+<h3 id="usage-1">Usage:</h3>
+<pre><code class="language-r">mflda<span class="hljs-punctuation">(</span>Xtrain<span class="hljs-punctuation">,</span> Y<span class="hljs-punctuation">,</span> Tau<span class="hljs-punctuation">,</span> Xtestdata <span class="hljs-operator">=</span> <span class="hljs-literal">NULL</span><span class="hljs-punctuation">,</span> Ytest <span class="hljs-operator">=</span> <span class="hljs-literal">NULL</span><span class="hljs-punctuation">,</span> plotIt <span class="hljs-operator">=</span> <span class="hljs-literal">FALSE</span><span class="hljs-punctuation">,</span> 
+standardize <span class="hljs-operator">=</span> <span class="hljs-literal">TRUE</span><span class="hljs-punctuation">,</span> maxiteration <span class="hljs-operator">=</span> <span class="hljs-number">20</span><span class="hljs-punctuation">,</span> thresh <span class="hljs-operator">=</span> <span class="hljs-number">1e-03</span><span class="hljs-punctuation">)</span>
+</code></pre>
+<h3 id="arguments">Arguments</h3>
+<ul>
+<li><code>Xtrain</code>: The training data, where rows represent observations and columns represent features at different time points. The first three columns are <code>id</code>,<code>time</code>,<code>group</code>, while subsequent columns are feature values.</li>
+<li><code>Y</code>: A vector of class labels (1,2,...) for the training data.</li>
+<li><code>Tau</code>: A regularization parameter for controlling sparsity in MFLDA.</li>
+<li><code>Xtestdata</code>: (Optional) A matrix of predictor variables for test data.
+Rows represent samples and columns represent variables. Number of columns should be the same as training data.
+Defaults to Xtrain if not specified.</li>
+<li><code>Ytest</code>: (Optional) A vector of class labels for the test data. Defaults to Y if not specified.</li>
+<li><code>plotIt</code>: Logical; if TRUE, generates discriminant and density plots. Defaults to FALSE.</li>
+<li><code>standardize</code>: Logical; if TRUE, standardizes the data to have mean zero and variance one. Defaults to TRUE.</li>
+<li><code>maxiteration</code>: Maximum number of iterations for model convergence. Defaults to 20.</li>
+<li><code>thresh</code>: Convergence threshold for the relative difference in estimates. Defaults to 1e-03.</li>
+</ul>
+<h3 id="value-1">Value</h3>
+<ul>
+<li><code>AverageError</code>: The mean classification error rate across time points.</li>
+<li><code>Metrics</code>: A summary of classification performance, including accuracy, balanced accuracy, F1 score, precision, recall, and MCC.</li>
+<li><code>TimeSpecificError</code>: Classification error calculated separately for each time point.</li>
+<li><code>hatalpha</code>: The estimated sparse MFLDA discriminant weights.</li>
+<li><code>PredictedClass</code>: The predicted class labels for Ytest.</li>
+<li><code>myDiscPlot</code>: The discriminant plots, if plotIt = TRUE.</li>
+<li><code>Projection.df</code>: A data frame containing projection scores.</li>
+<li><code>var.selected</code>: Logical vector indicating selected variables based on sparsity.</li>
+<li><code>varname.selected</code>: Names of the variables selected by the sparsity threshold.</li>
+</ul>
+<h3 id="examples">Examples</h3>
+<pre><code class="language-r"><span class="hljs-comment"># Run MFLDA on training and test data</span>
+result <span class="hljs-operator">&lt;-</span> mflda<span class="hljs-punctuation">(</span>Xtrain <span class="hljs-operator">=</span> train_data<span class="hljs-punctuation">,</span> Y <span class="hljs-operator">=</span> train_labels<span class="hljs-punctuation">,</span> Tau <span class="hljs-operator">=</span> <span class="hljs-number">50</span><span class="hljs-punctuation">,</span> 
+Xtestdata <span class="hljs-operator">=</span> test_data<span class="hljs-punctuation">,</span> Ytest <span class="hljs-operator">=</span> test_labels<span class="hljs-punctuation">)</span>
+print<span class="hljs-punctuation">(</span>result<span class="hljs-operator">$</span>Metrics<span class="hljs-punctuation">)</span>
+</code></pre>
+<h2 id="cvmflda">CVMFLDA</h2>
+<p>The function <code>cvmflda())</code> conducts cross-validation for MFLDA across a specified parameter grid to identify optimal regularization values for classification. The function can run in parallel for efficiency.</p>
+<h3 id="usage-2">Usage</h3>
+<pre><code class="language-r">cvMFLDA<span class="hljs-punctuation">(</span>Xdata<span class="hljs-punctuation">,</span> Y<span class="hljs-punctuation">,</span> plotIt <span class="hljs-operator">=</span> <span class="hljs-literal">FALSE</span><span class="hljs-punctuation">,</span> metrics.choice <span class="hljs-operator">=</span> <span class="hljs-string">&quot;Accuracy&quot;</span><span class="hljs-punctuation">,</span> 
+        Xtestdata <span class="hljs-operator">=</span> <span class="hljs-literal">NULL</span><span class="hljs-punctuation">,</span> Ytest <span class="hljs-operator">=</span> <span class="hljs-literal">NULL</span><span class="hljs-punctuation">,</span> isParallel <span class="hljs-operator">=</span> <span class="hljs-literal">TRUE</span><span class="hljs-punctuation">,</span> ncores <span class="hljs-operator">=</span> <span class="hljs-literal">NULL</span><span class="hljs-punctuation">,</span>
+        nfolds <span class="hljs-operator">=</span> <span class="hljs-number">5</span><span class="hljs-punctuation">,</span> ngrid <span class="hljs-operator">=</span> <span class="hljs-number">8</span><span class="hljs-punctuation">,</span> standardize <span class="hljs-operator">=</span> <span class="hljs-literal">TRUE</span><span class="hljs-punctuation">,</span> maxiteration <span class="hljs-operator">=</span> <span class="hljs-number">20</span><span class="hljs-punctuation">,</span> thresh <span class="hljs-operator">=</span> <span class="hljs-number">1e-03</span><span class="hljs-punctuation">)</span>
+</code></pre>
+<h3 id="arguments-1">Arguments</h3>
+<ul>
+<li><code>Xdata</code>: The training data, where rows represent observations and columns represent features at different time points. The first three columns are <code>id</code>,<code>time</code>,<code>group</code>, while subsequent columns are feature values.</li>
+<li><code>Y</code>: A vector of class labels for the training data.</li>
+<li><code>plotIt</code>: Logical; if TRUE, generates discriminant and density plots after model convergence. Defaults to FALSE.</li>
+<li><code>metrics.choice</code>: Specifies the metric to optimize during cross-validation. Options are &quot;Accuracy&quot; (default) or &quot;CombinedMetrics&quot;.</li>
+<li><code>Xtestdata</code>: (Optional) Data frame of predictor variables for test data. Defaults to Xdata if not specified.</li>
+<li><code>Ytest</code>: (Optional) Vector of class labels for the test data. Defaults to Y if not specified.</li>
+<li><code>isParallel</code>: Logical; if TRUE, enables parallel processing for cross-validation. Defaults to TRUE.</li>
+<li><code>ncores</code>: Number of cores for parallel processing. Defaults to half the system's available cores.</li>
+<li><code>nfolds</code>: Number of folds for cross-validation. Defaults to 5.</li>
+<li><code>ngrid</code>: Number of regularization values (grid points) to consider during cross-validation. Defaults to 8.</li>
+<li><code>standardize</code>: Logical; if TRUE, standardizes the data. Defaults to TRUE.</li>
+<li><code>maxiteration</code>: Maximum number of iterations for the MFLDA model convergence. Defaults to 20.</li>
+<li><code>thresh</code>: Convergence threshold for the iterative model updates. Defaults to 1e-03.</li>
+</ul>
+<h3 id="value-2">Value</h3>
+<ul>
+<li><code>CVOut</code>: A matrix with cross-validation results for each fold and grid value.</li>
+<li><code>mfldaerror.test</code>: Estimated test classification error using the optimal Tau.</li>
+<li><code>sidaerror.train</code>: Estimated training classification error using the optimal Tau.</li>
+<li><code>hatalpha</code>: The estimated discriminant weights from MFLDA.</li>
+<li><code>PredictedClass</code>: Predicted class labels for the test set.</li>
+<li><code>var.selected</code>: Logical vector indicating selected variables based on the optimal regularization parameter.</li>
+<li><code>varname.selected</code>: Names of the selected variables.</li>
+<li><code>optTau</code>: The optimal regularization parameter from the grid search.</li>
+<li><code>gridValues</code>: All Tau values explored during cross-validation.</li>
+<li><code>myDiscPlot</code>: The discriminant plots, if plotIt = TRUE.</li>
+<li><code>InputData</code>: Original training data (Xdata).</li>
+</ul>
+<h3 id="examples-1">Examples</h3>
+<pre><code class="language-r"><span class="hljs-comment"># Run cross-validated mflda on training data</span>
+cv_result <span class="hljs-operator">&lt;-</span> cvMFLDA<span class="hljs-punctuation">(</span>Xdata <span class="hljs-operator">=</span> training_data<span class="hljs-punctuation">,</span> Y <span class="hljs-operator">=</span> training_labels<span class="hljs-punctuation">,</span> nfolds <span class="hljs-operator">=</span> <span class="hljs-number">5</span><span class="hljs-punctuation">,</span> 
+ngrid <span class="hljs-operator">=</span> <span class="hljs-number">10</span><span class="hljs-punctuation">,</span> isParallel <span class="hljs-operator">=</span> <span class="hljs-literal">TRUE</span><span class="hljs-punctuation">)</span>
+print<span class="hljs-punctuation">(</span>cv_result<span class="hljs-operator">$</span>optTau<span class="hljs-punctuation">)</span> <span class="hljs-comment"># Print optimal Tau value</span>
+</code></pre>
+<h2 id="discriminantplot">DiscriminantPlot</h2>
+<p>The function <code>discriminantplot()</code> generates discriminant plots and density plots for visualizing class separation in projected test data over time.</p>
+<h3 id="usage-3">Usage</h3>
+<pre><code class="language-r">DiscriminantPlots<span class="hljs-punctuation">(</span>Xtestdata<span class="hljs-punctuation">,</span> Ytest<span class="hljs-punctuation">,</span> myalpha<span class="hljs-punctuation">,</span> predicted.class<span class="hljs-punctuation">)</span>
+</code></pre>
+<h3 id="arguments-2">Arguments</h3>
+<ul>
+<li><code>Xtestdata</code>: The testing data, where rows represent observations and columns represent features at different time points. The first three columns are <code>id</code>,<code>time</code>,<code>group</code>, while subsequent columns are feature values.</li>
+<li><code>Ytest</code>: Vector of actual class labels for the test data.</li>
+<li><code>myalpha</code>: Matrix of discriminant vectors, where each column represents a time point.</li>
+<li><code>predicted.class</code>: Vector of predicted class labels for the test data.</li>
+</ul>
+<h3 id="value-3">Value</h3>
+<ul>
+<li><code>Projection.df</code>: Data frame containing projected values for each sample at each time point.</li>
+<li><code>discriminant.plot</code>: ggplot object showing class projections over time with a loess-smoothed mean line.</li>
+<li><code>density.loess</code>: ggplot density plot based on loess-smoothed projections for each class.</li>
+<li><code>density.plot</code>: ggplot density plot of row means of projections, grouped by predicted class.</li>
+<li><code>ks.loess.p</code>: p-value from the KS test for loess-smoothed distribution comparison.</li>
+<li><code>ks.density.p</code>: p-value from the KS test for row mean distribution comparison by predicted class.</li>
+</ul>
+<h3 id="examples-2">Examples</h3>
+<pre><code class="language-r">result <span class="hljs-operator">&lt;-</span> DiscriminantPlots<span class="hljs-punctuation">(</span>Xtestdata <span class="hljs-operator">=</span> test_data<span class="hljs-punctuation">,</span> Ytest <span class="hljs-operator">=</span> y_test<span class="hljs-punctuation">,</span> 
+myalpha <span class="hljs-operator">=</span> alpha_matrix<span class="hljs-punctuation">,</span> predicted.class <span class="hljs-operator">=</span> pred_class<span class="hljs-punctuation">)</span>
+print<span class="hljs-punctuation">(</span>result<span class="hljs-operator">$</span>discriminant.plot<span class="hljs-punctuation">)</span>
+print<span class="hljs-punctuation">(</span>result<span class="hljs-operator">$</span>density.plot<span class="hljs-punctuation">)</span>
+</code></pre>
+<h2 id="data-simulation-demo--1-binary-outcome">Data Simulation Demo -1: Binary Outcome</h2>
+<p>(the following code can be found in <code>main.R</code>)</p>
+<p>Simulate the binary class data using the <code>simulation()</code> function</p>
+<pre><code class="language-r">data <span class="hljs-operator">&lt;-</span> simulation<span class="hljs-punctuation">(</span>n.class <span class="hljs-operator">=</span> <span class="hljs-number">2</span><span class="hljs-punctuation">,</span> case.num <span class="hljs-operator">=</span> <span class="hljs-number">1</span><span class="hljs-punctuation">)</span> <span class="hljs-comment">## choose case.num from 1-4</span>
+View<span class="hljs-punctuation">(</span>data<span class="hljs-operator">$</span>train<span class="hljs-punctuation">)</span>
+View<span class="hljs-punctuation">(</span>data<span class="hljs-operator">$</span>test<span class="hljs-punctuation">)</span>
+</code></pre>
+<p>There are four different cases for binary simulation:</p>
+<ul>
+<li>
+<ol>
+<li>the two groups are distinct across all time points, exhibiting similar average trends;</li>
+</ol>
+</li>
+<li>
+<ol start="2">
+<li>the two groups diverge only within a specific time window, from the time point [5, 15], displaying different patterns;</li>
+</ol>
+</li>
+<li>
+<ol start="3">
+<li>the two groups show separation over a fixed interval of 10 time points, though the exact time frame varies;</li>
+</ol>
+</li>
+<li>
+<ol start="4">
+<li>the two groups are distinct during a random occurring period, with the length of the separation varying between 5 and 40 time points.</li>
+</ol>
+</li>
+</ul>
+<p>Next use b-spline estimation to smooth the curve</p>
+<pre><code class="language-r">train.pred <span class="hljs-operator">&lt;-</span> spline.prediction<span class="hljs-punctuation">(</span>data<span class="hljs-operator">$</span>train<span class="hljs-punctuation">)</span>
+View<span class="hljs-punctuation">(</span>newdat<span class="hljs-operator">$</span>pred.df<span class="hljs-punctuation">)</span>
+test.pred <span class="hljs-operator">&lt;-</span> spline.prediction<span class="hljs-punctuation">(</span>data<span class="hljs-operator">$</span>test<span class="hljs-punctuation">)</span>
+View<span class="hljs-punctuation">(</span>newdat<span class="hljs-operator">$</span>pred.df<span class="hljs-punctuation">)</span>
+</code></pre>
+<p>Thus, <code>train.pred</code> and <code>test.pred</code> is ready for use in MFLDA.</p>
+<h2 id="data-simulation-demo--2-multi-classes-outcome">Data Simulation Demo -2: Multi-Classes Outcome</h2>
+<p>(the following code can be found in <code>main.R</code>)</p>
+<p>Similarly we can simulate some multi-classes data:</p>
+<pre><code class="language-R">data <span class="hljs-operator">&lt;-</span> simulation<span class="hljs-punctuation">(</span>n.class <span class="hljs-operator">=</span> <span class="hljs-number">3</span><span class="hljs-punctuation">,</span> case.num <span class="hljs-operator">=</span> <span class="hljs-number">1</span><span class="hljs-punctuation">)</span> <span class="hljs-comment">## choose case.num from 1-4</span>
+View<span class="hljs-punctuation">(</span>data<span class="hljs-operator">$</span>train<span class="hljs-punctuation">)</span>
+View<span class="hljs-punctuation">(</span>data<span class="hljs-operator">$</span>test<span class="hljs-punctuation">)</span>
+
+<span class="hljs-comment">## b-spline estimation</span>
+train.pred <span class="hljs-operator">&lt;-</span> spline.prediction<span class="hljs-punctuation">(</span>data<span class="hljs-operator">$</span>train<span class="hljs-punctuation">)</span>
+View<span class="hljs-punctuation">(</span>newdat<span class="hljs-operator">$</span>pred.df<span class="hljs-punctuation">)</span>
+test.pred <span class="hljs-operator">&lt;-</span> spline.prediction<span class="hljs-punctuation">(</span>data<span class="hljs-operator">$</span>test<span class="hljs-punctuation">)</span>
+View<span class="hljs-punctuation">(</span>newdat<span class="hljs-operator">$</span>pred.df<span class="hljs-punctuation">)</span>
+</code></pre>
+<p>After applying spline estimation smoothing, <code>train.pred</code> and <code>test.pred</code> is ready for use in MFLDA.</p>
+<h2 id="mflda-demo---3-class-problem">MFLDA Demo - 3-Class Problem</h2>
+<p>(the following code can be found in <code>main.R</code>)</p>
+<p>We can perform MFLDA with knwon regularization parameter <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>τ</mi></mrow><annotation encoding="application/x-tex">\tau</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.1132em;">τ</span></span></span></span>, for example, let <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>τ</mi><mo>=</mo><mn>50</mn></mrow><annotation encoding="application/x-tex">\tau = 50</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.1132em;">τ</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">50</span></span></span></span>. By default, we will run MFLDA-D model.</p>
+<p>We have provided some simulated data in the folder <code>data</code> after applying spline estimation. First, we need to gather some information from the data.</p>
+<pre><code class="language-R"><span class="hljs-comment">################### MFLDA-Multi-Class Problems ###################</span>
+<span class="hljs-comment">## Read data</span>
+XTrain <span class="hljs-operator">&lt;-</span> get<span class="hljs-punctuation">(</span>load<span class="hljs-punctuation">(</span><span class="hljs-string">&quot;data/simTrain_spline_c3_case4.rda&quot;</span><span class="hljs-punctuation">)</span><span class="hljs-punctuation">)</span>
+XTest <span class="hljs-operator">&lt;-</span> get<span class="hljs-punctuation">(</span>load<span class="hljs-punctuation">(</span><span class="hljs-string">&quot;data/simTest_spline_c3_case4.rda&quot;</span><span class="hljs-punctuation">)</span><span class="hljs-punctuation">)</span>
+
+trainX <span class="hljs-operator">&lt;-</span> XTrain
+trainX<span class="hljs-operator">$</span>group <span class="hljs-operator">&lt;-</span> <span class="hljs-built_in">as.integer</span><span class="hljs-punctuation">(</span>trainX<span class="hljs-operator">$</span>group<span class="hljs-punctuation">)</span>
+trainY <span class="hljs-operator">&lt;-</span> trainX<span class="hljs-operator">$</span>group<span class="hljs-punctuation">[</span>trainX<span class="hljs-operator">$</span>time <span class="hljs-operator">==</span> <span class="hljs-number">1</span><span class="hljs-punctuation">]</span>
+trainY <span class="hljs-operator">&lt;-</span> <span class="hljs-built_in">as.integer</span><span class="hljs-punctuation">(</span>trainY<span class="hljs-punctuation">)</span>
+
+testX <span class="hljs-operator">&lt;-</span> XTest
+testY <span class="hljs-operator">&lt;-</span> testX<span class="hljs-operator">$</span>group<span class="hljs-punctuation">[</span>testX<span class="hljs-operator">$</span>time <span class="hljs-operator">==</span> <span class="hljs-number">1</span><span class="hljs-punctuation">]</span>
+testX<span class="hljs-operator">$</span>group <span class="hljs-operator">&lt;-</span> <span class="hljs-built_in">as.integer</span><span class="hljs-punctuation">(</span>testX<span class="hljs-operator">$</span>group<span class="hljs-punctuation">)</span>
+testY <span class="hljs-operator">&lt;-</span> <span class="hljs-built_in">as.integer</span><span class="hljs-punctuation">(</span>testY<span class="hljs-punctuation">)</span>
+</code></pre>
+<p>With known parameter, we can apply <code>mflda()</code>:</p>
+<pre><code class="language-R"><span class="hljs-comment">## MFLDA with known hyper-parameter</span>
+myTau <span class="hljs-operator">=</span> <span class="hljs-number">50</span> <span class="hljs-comment">## can choose your own</span>
+mflda.result <span class="hljs-operator">&lt;-</span> mflda<span class="hljs-punctuation">(</span>Xtrain<span class="hljs-operator">=</span>trainX<span class="hljs-punctuation">,</span>Y<span class="hljs-operator">=</span>trainY<span class="hljs-punctuation">,</span>Tau<span class="hljs-operator">=</span>myTau<span class="hljs-punctuation">,</span>
+Xtestdata<span class="hljs-operator">=</span>testX<span class="hljs-punctuation">,</span>Ytest<span class="hljs-operator">=</span>testY<span class="hljs-punctuation">,</span>
+plotIt<span class="hljs-operator">=</span><span class="hljs-literal">FALSE</span><span class="hljs-punctuation">,</span>standardize<span class="hljs-operator">=</span><span class="hljs-literal">TRUE</span><span class="hljs-punctuation">,</span>maxiteration<span class="hljs-operator">=</span><span class="hljs-number">20</span><span class="hljs-punctuation">,</span>thresh<span class="hljs-operator">=</span> <span class="hljs-number">1e-03</span><span class="hljs-punctuation">)</span>
+</code></pre>
+<p>You can also check discriminant and density plots using <code>discriminantplot()</code> for the first discriminant vector:</p>
+<pre><code class="language-r">myplots <span class="hljs-operator">&lt;-</span> DiscriminantPlots<span class="hljs-punctuation">(</span>Xtestdata<span class="hljs-operator">=</span>testX<span class="hljs-punctuation">,</span>Ytest<span class="hljs-operator">=</span>testY<span class="hljs-punctuation">,</span>
+myalpha<span class="hljs-operator">=</span>mflda.result<span class="hljs-operator">$</span>hatalpha<span class="hljs-punctuation">[[</span><span class="hljs-number">1</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span> predicted.class <span class="hljs-operator">=</span> mflda.result<span class="hljs-operator">$</span>PredictedClass<span class="hljs-punctuation">)</span>
+myplot<span class="hljs-operator">$</span>discriminant.plot
+myplot<span class="hljs-operator">$</span>density.loess
+myplot<span class="hljs-operator">$</span>density.plot
+</code></pre>
+<p>For unknown parameter, we can use <code>cvmflda()</code> to choose the optimal one:</p>
+<pre><code class="language-R">cvmod <span class="hljs-operator">&lt;-</span> cvMFLDA<span class="hljs-punctuation">(</span>Xdata<span class="hljs-operator">=</span>trainX<span class="hljs-punctuation">,</span>Y<span class="hljs-operator">=</span>trainY<span class="hljs-punctuation">,</span> metrics.choice<span class="hljs-operator">=</span><span class="hljs-string">&quot;CombinedMetrics&quot;</span><span class="hljs-punctuation">)</span> <span class="hljs-comment">## Accuracy or CombinedMetrics</span>
+cvmod<span class="hljs-operator">$</span>optTau
+</code></pre>
+<p>Then we can get some addtional information, such as predicted classes, first and second discriminant score, and selected variables.</p>
+<pre><code class="language-R"><span class="hljs-comment">## find the predicted classes</span>
+mflda.result<span class="hljs-operator">$</span>PredictedClass
+
+<span class="hljs-comment">## find the first discriminant scores</span>
+mflda.result<span class="hljs-operator">$</span>hatalpha<span class="hljs-punctuation">[[</span><span class="hljs-number">1</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">]</span>
+
+<span class="hljs-comment">## find the second discriminant scores</span>
+mflda.result<span class="hljs-operator">$</span>hatalpha<span class="hljs-punctuation">[[</span><span class="hljs-number">2</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">]</span>
+
+<span class="hljs-comment">## find the selected variables</span>
+mflda.result<span class="hljs-operator">$</span>varname.selected
+</code></pre>
+<p>Similarly, we can plot the discriminant plots for the first discriminant vector</p>
+<pre><code class="language-R"><span class="hljs-comment">## plot the discriminant plots for the first discriminant vector</span>
+myplot <span class="hljs-operator">&lt;-</span> DiscriminantPlots<span class="hljs-punctuation">(</span>Xtestdata<span class="hljs-operator">=</span>testX<span class="hljs-punctuation">,</span>Ytest<span class="hljs-operator">=</span>testY<span class="hljs-punctuation">,</span>
+myalpha<span class="hljs-operator">=</span>mflda.result<span class="hljs-operator">$</span>hatalpha<span class="hljs-punctuation">[[</span><span class="hljs-number">1</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span> predicted.class <span class="hljs-operator">=</span> mflda.result<span class="hljs-operator">$</span>PredictedClass<span class="hljs-punctuation">)</span>
+myplot<span class="hljs-operator">$</span>discriminant.plot
+myplot<span class="hljs-operator">$</span>density.loess
+myplot<span class="hljs-operator">$</span>density.plot
+</code></pre>
+<h2 id="sflda-demo---2-class-problem">SFLDA Demo - 2-Class Problem</h2>
+<p>(the following code can be found in <code>main.R</code>)</p>
+<p>SFLDA is also applicable for 2-classes problem, we have provided some simulated data in the folder <code>simulations</code> after applying spline estimation.</p>
+<pre><code class="language-R"><span class="hljs-comment">## Read data</span>
+XTrain <span class="hljs-operator">&lt;-</span> get<span class="hljs-punctuation">(</span>load<span class="hljs-punctuation">(</span><span class="hljs-string">&quot;data/simTrain_spline_c2_case4.rda&quot;</span><span class="hljs-punctuation">)</span><span class="hljs-punctuation">)</span>
+XTest <span class="hljs-operator">&lt;-</span> get<span class="hljs-punctuation">(</span>load<span class="hljs-punctuation">(</span><span class="hljs-string">&quot;data/simTest_spline_c2_case4.rda&quot;</span><span class="hljs-punctuation">)</span><span class="hljs-punctuation">)</span>
+
+<span class="hljs-comment">## rest codes will be the similar to 3-class problem</span>
+</code></pre>
+<h2 id="real-data-application-inflammatory-bowel-disease">Real-data Application: Inflammatory Bowel Disease</h2>
+<p>The Metagenomics(MGX) dataset and metadata can be download from iHMP IBD dataset website: <a href="https://ibdmdb.org/">https://ibdmdb.org/</a>.</p>
+<p>Preprocess the Metagenomics(MGX) dataset (code can be found in <code>ibd/ibd_preprocess.R</code>):</p>
+<pre><code class="language-r">metag <span class="hljs-operator">&lt;-</span> ibd_preprocess<span class="hljs-punctuation">(</span>metagenomics_df<span class="hljs-punctuation">)</span>
+</code></pre>
+<p>Merging the metadata (<code>Participant.ID</code>, <code>visit_num</code>, <code>diagnosis</code>, <code>Age.at.diagnosis</code>, and <code>site_name</code>) and the preprocessed metagenomics dataset to a dataframe.</p>
+<p>Use Linear Mixed Effect Model to seelct the top 200 microbial pathways
+(code can be found in <code>R/ibd/ibd_lmms.R</code>).</p>
+<p>We prepared a IBD_data demo dataset file (30% of original data)
+which contains  in <code>data/ibd_sample.rda</code> after LMMS,
+and a corresponding spline prediction sample file in <code>data/ibd_sample_prediction.rda</code>.</p>
+
+            <script async src="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.js"></script>
+            
+        </body>
+        </html>
